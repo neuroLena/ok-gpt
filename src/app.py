@@ -5,12 +5,16 @@ from telegram import Update, Voice, MessageEntity
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 import dotenv
 import json
+import logging
 
 dotenv.load_dotenv()
 
 TELEGRAM_API_TOKEN=os.environ["TELEGRAM_API_TOKEN"]
 OPENAI_API_KEY=os.environ["CHATGPT_API_KEY"]
 WHISPER_API_KEY=os.environ["WHISPER_API_KEY"]
+
+# Set up logging
+logging.basicConfig(filename="bot.log", level=logging.INFO, format="%(asctime)s - %(message)s")
 
 # Set up OpenAI API
 openai.api_key = OPENAI_API_KEY
@@ -22,8 +26,10 @@ def process_voice_message(update: Update, context: CallbackContext):
     voice: Voice = update.message.voice
     file_id = voice.file_id
     user_id = update.message.from_user.id
+    user_name = update.message.from_user.username or update.message.from_user.first_name
 
     # Download the voice message
+    logging.info(f"User: {user_name} (ID: {user_id}) - Voice message received")
     voice_file = context.bot.get_file(file_id)
     voice_file.download(f"audio/voice_{user_id}.ogg")
 
@@ -49,6 +55,7 @@ def process_voice_message(update: Update, context: CallbackContext):
     # transcribed_text = "\n".join([entry["text"].strip() for entry in transcription_data["transcription"]])
     
     transcribed_text = response["text"]
+    logging.info(f"User: {user_name} (ID: {user_id}) - Transcribed text: {transcribed_text}")
     print(transcribed_text)
 
     # Send the transcribed text to ChatGPT
@@ -65,6 +72,7 @@ def process_voice_message(update: Update, context: CallbackContext):
     )
         
     assistant_reply = chatgpt_response.choices[0].message["content"]
+    logging.info(f"User: {user_name} (ID: {user_id}) - ChatGPT response: {assistant_reply}")
     print(assistant_reply)
 
     update.message.reply_text(assistant_reply)
