@@ -10,7 +10,7 @@ dotenv.load_dotenv()
 
 TELEGRAM_API_TOKEN=os.environ["TELEGRAM_API_TOKEN"]
 OPENAI_API_KEY=os.environ["CHATGPT_API_KEY"]
-# WHISPER_API_KEY=os.environ["WHISPER_API_KEY"]
+WHISPER_API_KEY=os.environ["WHISPER_API_KEY"]
 
 # Set up OpenAI API
 openai.api_key = OPENAI_API_KEY
@@ -21,20 +21,34 @@ def start(update: Update, context: CallbackContext):
 def process_voice_message(update: Update, context: CallbackContext):
     voice: Voice = update.message.voice
     file_id = voice.file_id
+    user_id = update.message.from_user.id
 
     # Download the voice message
     voice_file = context.bot.get_file(file_id)
-    voice_file.download("audio/voice.ogg")
+    voice_file.download(f"audio/voice_{user_id}.ogg")
 
     # Convert Ogg to WAV
-    os.system("yes | ffmpeg -i audio/voice.ogg -acodec pcm_s16le -ac 1 -ar 16000 audio/voice.wav")
+    os.system(f"yes | ffmpeg -i audio/voice_{user_id}.ogg -acodec pcm_s16le -ac 1 -ar 16000 audio/voice_{user_id}.wav")
 
-    # Speech to text
-    os.system("./whisper.cpp/main -m whisper.cpp/models/ggml-large.bin -f audio/voice.wav -nt -l auto -pp -oj -of audio/voice")
-    with open("audio/voice.json", "r") as f:
-        transcription_data = json.load(f)
+    # Transcribe the voice message using Whisper ASR
+    with open(f"audio/voice_{user_id}.wav", "rb") as audio_file:
+        response = openai.Audio.transcribe("whisper-1", audio_file)
 
-    transcribed_text = "\n".join([entry["text"].strip() for entry in transcription_data["transcription"]])
+    # response_json = response.json()
+    # if response.status_code != 200:
+    #     update.message.reply_text(f"Error transcribing voice message: {response_json['error']}")
+    #     return
+
+    #transcribed_text = response_json["choices"][0]["text"]
+
+    # # Speech to text
+    # os.system("./whisper.cpp/main -m whisper.cpp/models/ggml-large.bin -f audio/voice_{user_id}.wav -nt -l auto -pp -oj -of audio/voice_{user_id}")
+    # with open("audio/voice_{user_id}.json", "r") as f:
+    #     transcription_data = json.load(f)
+
+    # transcribed_text = "\n".join([entry["text"].strip() for entry in transcription_data["transcription"]])
+    
+    transcribed_text = response["text"]
     print(transcribed_text)
 
     # Send the transcribed text to ChatGPT
@@ -70,17 +84,3 @@ if __name__ == "__main__":
 
 
 
-    # Transcribe the voice message using Whisper ASR
-    # with open("audio/voice.wav", "rb") as audio_file:
-    #     response = requests.post(
-    #         "https://api.openai.com/v1/engines/whisper/asr",
-    #         headers={"Authorization": f"Bearer {WHISPER_API_KEY}"},
-    #         files={"file": audio_file}
-    #     )
-
-    # response_json = response.json()
-    # if response.status_code != 200:
-    #     update.message.reply_text(f"Error transcribing voice message: {response_json['error']}")
-    #     return
-
-    # transcribed_text = response_json["choices"][0]["text"]
