@@ -1,0 +1,14 @@
+# local package
+-e .
+
+# external requirements
+click
+joblib
+tqdm
+numpy
+black
+flake8
+python-dotenv
+pytest
+openai
+python-telegram-bot==13.7
