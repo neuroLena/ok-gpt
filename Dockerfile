@@ -10,9 +10,9 @@ COPY requirements.txt /app
 
 # Install any needed packages specified in requirements.txt
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
+RUN apt-get install -y ffmpeg
 RUN pip install -U pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
-
 
 # Copy the rest of the application code into the container at /app
 COPY . /app
