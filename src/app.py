@@ -9,8 +9,8 @@ import json
 dotenv.load_dotenv()
 
 TELEGRAM_API_TOKEN=os.environ["TELEGRAM_API_TOKEN"]
-# WHISPER_API_KEY=os.environ["WHISPER_API_KEY"]
 OPENAI_API_KEY=os.environ["CHATGPT_API_KEY"]
+# WHISPER_API_KEY=os.environ["WHISPER_API_KEY"]
 
 # Set up OpenAI API
 openai.api_key = OPENAI_API_KEY
@@ -44,7 +44,7 @@ def process_voice_message(update: Update, context: CallbackContext):
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": transcribed_text},
             ],
-        max_tokens=250,
+        max_tokens=1000,
         n=1,
         stop=None,
         temperature=0.5,
