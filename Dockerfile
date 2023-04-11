@@ -7,6 +7,7 @@ WORKDIR "/app"
 
 # Copy the requirements.txt file into the container at /app
 COPY requirements.txt /app
+COPY setup.py /app
 
 # Install any needed packages specified in requirements.txt
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
