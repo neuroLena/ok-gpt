@@ -11,7 +11,7 @@ import logging
 dotenv.load_dotenv()
 
 TELEGRAM_API_TOKEN=os.environ["TELEGRAM_API_TOKEN"]
-OPENAI_API_KEY=os.environ["CHATGPT_API_KEY"]
+OPENAI_API_KEY=os.environ["OPENAI_API_KEY"]
 
 # Set up logging
 file_handler = logging.FileHandler(filename="logs/bot.log", mode="a")
