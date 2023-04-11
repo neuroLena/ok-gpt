@@ -23,6 +23,35 @@ logging.basicConfig(
     handlers=handlers,
 )
 
+# # Set up remote logging with DataDog
+# from datadog_api_client import ApiClient, Configuration
+# from datadog_api_client.v2.api.logs_api import LogsApi
+# from datadog_api_client.v2.model.content_encoding import ContentEncoding
+# from datadog_api_client.v2.model.http_log import HTTPLog
+# from datadog_api_client.v2.model.http_log_item import HTTPLogItem
+
+# datadog_config = Configuration()
+# datadog_config.api_key["apiKeyAuth"] = os.environ["DATADOG_API_KEY"]
+
+# def log_to_datadog(message: str) -> str:
+#     body = HTTPLog(
+#         [
+#             HTTPLogItem(
+#                 ddsource="bot",
+#                 ddtags="env:prod,version:0.1.1",
+#                 # hostname="i-012345678",
+#                 message=message,
+#                 # service="payment",
+#             ),
+#         ]
+#     )
+
+#     with ApiClient(datadog_config) as api_client:
+#         api_instance = LogsApi(api_client)
+#         response = api_instance.submit_log(content_encoding=ContentEncoding.DEFLATE, body=body)
+#         logging.info(response)
+
+
 # Set up OpenAI API
 openai.api_key = OPENAI_API_KEY
 
@@ -37,6 +66,7 @@ def process_voice_message(update: Update, context: CallbackContext):
 
     # Download the voice message
     logging.info(f"User: {user_name} (ID: {user_id}) - Voice message received")
+    # log_to_datadog(f"User: {user_name} (ID: {user_id}) - Voice message received")
     voice_file = context.bot.get_file(file_id)
     voice_file.download(f"audio/voice_{user_id}.ogg")
 

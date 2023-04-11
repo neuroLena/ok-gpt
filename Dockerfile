@@ -17,6 +17,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code into the container at /app
 COPY . /app
 
+# Install Datadog Agent
+RUN bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script_agent7.sh)"
+
 # Make the port 8000 available to the world outside this container
 EXPOSE 8000
 
