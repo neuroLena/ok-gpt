@@ -11,16 +11,15 @@ dotenv.load_dotenv()
 
 TELEGRAM_API_TOKEN=os.environ["TELEGRAM_API_TOKEN"]
 OPENAI_API_KEY=os.environ["CHATGPT_API_KEY"]
-WHISPER_API_KEY=os.environ["WHISPER_API_KEY"]
 
 # Set up logging
-logging.basicConfig(filename="bot.log", level=logging.INFO, format="%(asctime)s - %(message)s")
+logging.basicConfig(filename="logs/bot.log", level=logging.INFO, format="%(asctime)s - %(message)s")
 
 # Set up OpenAI API
 openai.api_key = OPENAI_API_KEY
 
 def start(update: Update, context: CallbackContext):
-    update.message.reply_text("Hello! Send me a voice message, and I'll transcribe it and send the result to ChatGPT.")
+    update.message.reply_text("Hello! Send me a voice message, and I'll transcribe it and send the result to ChatGPT.\n\nNote it may take up to a minute to get a response, because ChatGPT itself is pretty slow.")
 
 def process_voice_message(update: Update, context: CallbackContext):
     voice: Voice = update.message.voice
@@ -30,6 +29,7 @@ def process_voice_message(update: Update, context: CallbackContext):
 
     # Download the voice message
     logging.info(f"User: {user_name} (ID: {user_id}) - Voice message received")
+    print(f"User: {user_name} (ID: {user_id}) - Voice message received")
     voice_file = context.bot.get_file(file_id)
     voice_file.download(f"audio/voice_{user_id}.ogg")
 
@@ -56,7 +56,7 @@ def process_voice_message(update: Update, context: CallbackContext):
     
     transcribed_text = response["text"]
     logging.info(f"User: {user_name} (ID: {user_id}) - Transcribed text: {transcribed_text}")
-    print(transcribed_text)
+    print(f"User: {user_name} (ID: {user_id}) - Transcribed text: {transcribed_text}")
 
     # Send the transcribed text to ChatGPT
     chatgpt_response = openai.ChatCompletion.create(
@@ -73,7 +73,7 @@ def process_voice_message(update: Update, context: CallbackContext):
         
     assistant_reply = chatgpt_response.choices[0].message["content"]
     logging.info(f"User: {user_name} (ID: {user_id}) - ChatGPT response: {assistant_reply}")
-    print(assistant_reply)
+    print(f"User: {user_name} (ID: {user_id}) - ChatGPT response: {assistant_reply}")
 
     update.message.reply_text(assistant_reply)
 
