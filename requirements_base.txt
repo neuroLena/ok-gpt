@@ -12,3 +12,4 @@ python-dotenv
 pytest
 openai
 python-telegram-bot==13.7
+datadog_api_client
