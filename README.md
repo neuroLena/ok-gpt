@@ -1,6 +1,3 @@
-![https://github.com/dsvolk/ok-gpt/blob/master/images/userpic.png](https://github.com/dsvolk/ok-gpt/blob/master/images/userpic.png
-)
-
 <img src="https://github.com/dsvolk/ok-gpt/blob/master/images/userpic.png" width="300" height="300">
 
 # OK, GPT
