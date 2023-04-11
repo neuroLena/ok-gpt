@@ -1,7 +1,7 @@
 <img src="https://github.com/dsvolk/ok-gpt/blob/master/images/userpic.png" width="300" height="300">
 
 # OK, GPT
-OK, GPT is a simple telegram bot to send voice messages to ChatGPT and get outputs. Requires your own API keys (and hence a paid subscription) to work.
+OK, GPT is a simple telegram bot to send voice messages to ChatGPT and get outputs. Requires your own OpenAI API key (and hence a paid subscription) to work.
 
 ## Installation
 ### Create a new Telegram bot with BotFather bot
