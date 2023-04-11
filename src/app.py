@@ -1,4 +1,5 @@
 import os
+import sys
 import openai
 import requests
 from telegram import Update, Voice, MessageEntity
@@ -13,7 +14,14 @@ TELEGRAM_API_TOKEN=os.environ["TELEGRAM_API_TOKEN"]
 OPENAI_API_KEY=os.environ["CHATGPT_API_KEY"]
 
 # Set up logging
-logging.basicConfig(filename="logs/bot.log", level=logging.INFO, format="%(asctime)s - %(message)s")
+file_handler = logging.FileHandler(filename="logs/bot.log", mode="a")
+stdout_handler = logging.StreamHandler(stream=sys.stdout)
+handlers = [file_handler, stdout_handler]
+logging.basicConfig(
+    level=logging.INFO, 
+    format="[%(asctime)s] %(message)s",
+    handlers=handlers,
+)
 
 # Set up OpenAI API
 openai.api_key = OPENAI_API_KEY
@@ -29,7 +37,6 @@ def process_voice_message(update: Update, context: CallbackContext):
 
     # Download the voice message
     logging.info(f"User: {user_name} (ID: {user_id}) - Voice message received")
-    print(f"User: {user_name} (ID: {user_id}) - Voice message received")
     voice_file = context.bot.get_file(file_id)
     voice_file.download(f"audio/voice_{user_id}.ogg")
 
@@ -39,24 +46,9 @@ def process_voice_message(update: Update, context: CallbackContext):
     # Transcribe the voice message using Whisper ASR
     with open(f"audio/voice_{user_id}.wav", "rb") as audio_file:
         response = openai.Audio.transcribe("whisper-1", audio_file)
-
-    # response_json = response.json()
-    # if response.status_code != 200:
-    #     update.message.reply_text(f"Error transcribing voice message: {response_json['error']}")
-    #     return
-
-    #transcribed_text = response_json["choices"][0]["text"]
-
-    # # Speech to text
-    # os.system("./whisper.cpp/main -m whisper.cpp/models/ggml-large.bin -f audio/voice_{user_id}.wav -nt -l auto -pp -oj -of audio/voice_{user_id}")
-    # with open("audio/voice_{user_id}.json", "r") as f:
-    #     transcription_data = json.load(f)
-
-    # transcribed_text = "\n".join([entry["text"].strip() for entry in transcription_data["transcription"]])
     
     transcribed_text = response["text"]
-    logging.info(f"User: {user_name} (ID: {user_id}) - Transcribed text: {transcribed_text}")
-    print(f"User: {user_name} (ID: {user_id}) - Transcribed text: {transcribed_text}")
+    logging.info(f"User: {user_name} (ID: {user_id}) - Transcribed text:\n{transcribed_text}")
 
     # Send the transcribed text to ChatGPT
     chatgpt_response = openai.ChatCompletion.create(
@@ -72,8 +64,7 @@ def process_voice_message(update: Update, context: CallbackContext):
     )
         
     assistant_reply = chatgpt_response.choices[0].message["content"]
-    logging.info(f"User: {user_name} (ID: {user_id}) - ChatGPT response: {assistant_reply}")
-    print(f"User: {user_name} (ID: {user_id}) - ChatGPT response: {assistant_reply}")
+    logging.info(f"User: {user_name} (ID: {user_id}) - ChatGPT response:\n{assistant_reply}")
 
     update.message.reply_text(assistant_reply)
 
