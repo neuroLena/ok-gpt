@@ -1,4 +1,4 @@
-![dvolk_assistant_artificial_intelligence_helpful_robot_ready_to__c71bfb41-df81-475c-9751-fac3f8d5692a](https://user-images.githubusercontent.com/3715652/231107336-8a1191a1-9771-47a6-9d2f-e36fd6f0a785.png)
+<img src="[pic.jpeg](https://user-images.githubusercontent.com/3715652/231107336-8a1191a1-9771-47a6-9d2f-e36fd6f0a785.png)" width="200" height="200" />
 
 # OK, GPT
 OK, GPT is a simple telegram bot to send voice messages to ChatGPT and get outputs. Requires your own API keys (and hence a paid subscription) to work.
