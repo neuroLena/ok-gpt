@@ -1,5 +1,5 @@
-.. image:: https://github.com/dsvolk/ok-gpt/blob/master/images/userpic.png
-
+![https://github.com/dsvolk/ok-gpt/blob/master/images/userpic.png](https://github.com/dsvolk/ok-gpt/blob/master/images/userpic.png
+)
 
 # OK, GPT
 OK, GPT is a simple telegram bot to send voice messages to ChatGPT and get outputs. Requires your own API keys (and hence a paid subscription) to work.
