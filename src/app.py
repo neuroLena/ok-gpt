@@ -40,7 +40,7 @@ async def start(update: Update, context: CallbackContext):
 ❗️ So far, I do not maintain the context of the discussion, so every new message starts a new context for me\.
 👀 But you can gently ask @denisvolk, and maybe he soon implements memory for me\!
 
-🆕 UPD 2023\-04\-12: Now you can send text messages, too\!"""
+🆕 UPD 2023\-04\-12: Now you can send me text messages, too\!"""
 
     await update.message.reply_text(start_text, parse_mode="MarkdownV2", disable_web_page_preview=True)
 
