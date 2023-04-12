@@ -43,7 +43,6 @@ def process_voice_message(update: Update, context: CallbackContext):
 
     # Download the voice message
     logging.info(f"User: {user_name} (ID: {user_id}) - Voice message received")
-    # log_to_datadog(f"User: {user_name} (ID: {user_id}) - Voice message received")
     voice_file = context.bot.get_file(file_id)
     voice_file.download(f"audio/voice_{user_id}.ogg")
 
@@ -56,7 +55,6 @@ def process_voice_message(update: Update, context: CallbackContext):
     
     transcribed_text = response["text"]
     logging.info(f"User: {user_name} (ID: {user_id}) - Transcribed text:\n{transcribed_text}")
-    # log_to_datadog(f"User: {user_name} (ID: {user_id}) - Transcribed text:\n{transcribed_text}")
 
     # Send the transcribed text to ChatGPT
     chatgpt_response = openai.ChatCompletion.create(
@@ -73,7 +71,6 @@ def process_voice_message(update: Update, context: CallbackContext):
         
     assistant_reply = chatgpt_response.choices[0].message["content"]
     logging.info(f"User: {user_name} (ID: {user_id}) - ChatGPT response:\n{assistant_reply}")
-    # log_to_datadog(f"User: {user_name} (ID: {user_id}) - ChatGPT response:\n{assistant_reply}")
 
     update.message.reply_text(assistant_reply)
 
