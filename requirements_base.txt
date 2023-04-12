@@ -11,5 +11,5 @@ flake8
 python-dotenv
 pytest
 openai
-python-telegram-bot==13.7
+python-telegram-bot[webhooks]
 datadog_api_client

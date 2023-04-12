@@ -2,8 +2,8 @@ import os
 import sys
 import openai
 import requests
-from telegram import Update, Voice, MessageEntity
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram import Update, Voice, MessageEntity, ForceReply
+from telegram.ext import Application, ContextTypes, CallbackContext, CommandHandler, MessageHandler, filters
 import dotenv
 import json
 import logging
@@ -32,10 +32,12 @@ logging.basicConfig(
 # Set up OpenAI API
 openai.api_key = OPENAI_API_KEY
 
+
 def start(update: Update, context: CallbackContext):
     update.message.reply_text("Hello! Send me a voice message, and I'll transcribe it and send the result to ChatGPT.\n\nNote it may take up to a minute to get a response, because ChatGPT itself is pretty slow.")
 
-def process_voice_message(update: Update, context: CallbackContext):
+
+async def process_voice_message(update: Update, context: CallbackContext):
     voice: Voice = update.message.voice
     file_id = voice.file_id
     user_id = update.message.from_user.id
@@ -43,8 +45,13 @@ def process_voice_message(update: Update, context: CallbackContext):
 
     # Download the voice message
     logging.info(f"User: {user_name} (ID: {user_id}) - Voice message received")
-    voice_file = context.bot.get_file(file_id)
-    voice_file.download(f"audio/voice_{user_id}.ogg")
+
+    voice_file = await update.message.effective_attachment.get_file()
+    await voice_file.download_to_drive(f"audio/voice_{user_id}.ogg")
+
+    # await context.bot.get_file(file_id).download(f"audio/voice_{user_id}.ogg")
+    # voice_file = await context.bot.get_file(file_id)
+    # await voice_file.download(f"audio/voice_{user_id}.ogg")
 
     # Convert Ogg to WAV
     os.system(f"yes | ffmpeg -i audio/voice_{user_id}.ogg -acodec pcm_s16le -ac 1 -ar 16000 audio/voice_{user_id}.wav")
@@ -72,17 +79,28 @@ def process_voice_message(update: Update, context: CallbackContext):
     assistant_reply = chatgpt_response.choices[0].message["content"]
     logging.info(f"User: {user_name} (ID: {user_id}) - ChatGPT response:\n{assistant_reply}")
 
-    update.message.reply_text(assistant_reply)
+    await update.message.reply_text(assistant_reply)
 
-def main():
-    updater = Updater(TELEGRAM_API_TOKEN)
 
-    dp = updater.dispatcher
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(MessageHandler(Filters.voice, process_voice_message))
+def main() -> None:
+    # Create the Application and pass it your bot's token.
+    application = (Application.builder()
+                   .token(TELEGRAM_API_TOKEN)
+                   .read_timeout(300)
+                   .write_timeout(300)
+                   .build()
+    )
 
-    updater.start_polling()
-    updater.idle()
+    # on different commands - answer in Telegram
+    application.add_handler(CommandHandler("start", start))
+    # application.add_handler(CommandHandler("help", help_command))
+
+    # on non command i.e message - echo the message on Telegram
+    application.add_handler(MessageHandler(filters.VOICE & ~filters.COMMAND, process_voice_message))
+
+    # Run the bot until the user presses Ctrl-C
+    application.run_polling()
+
 
 if __name__ == "__main__":
     main()
