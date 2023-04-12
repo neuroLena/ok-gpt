@@ -33,8 +33,12 @@ logging.basicConfig(
 openai.api_key = OPENAI_API_KEY
 
 
-def start(update: Update, context: CallbackContext):
-    update.message.reply_text("Hello! Send me a voice message, and I'll transcribe it and send the result to ChatGPT.\n\nNote it may take up to a minute to get a response, because ChatGPT itself is pretty slow.")
+async def start(update: Update, context: CallbackContext):
+    start_text = """🤖 Hello! Send me a voice message, and I'll transcribe it and send the result to ChatGPT.
+❗️ Note it may take up to a minute to get a response, because ChatGPT itself is pretty slow.
+🆕 UPD 2023-04-12: Now you can send text messages too!"""
+
+    await update.message.reply_text(start_text)
 
 
 async def process_voice_message(update: Update, context: CallbackContext):
@@ -48,10 +52,6 @@ async def process_voice_message(update: Update, context: CallbackContext):
 
     voice_file = await update.message.effective_attachment.get_file()
     await voice_file.download_to_drive(f"audio/voice_{user_id}.ogg")
-
-    # await context.bot.get_file(file_id).download(f"audio/voice_{user_id}.ogg")
-    # voice_file = await context.bot.get_file(file_id)
-    # await voice_file.download(f"audio/voice_{user_id}.ogg")
 
     # Convert Ogg to WAV
     os.system(f"yes | ffmpeg -i audio/voice_{user_id}.ogg -acodec pcm_s16le -ac 1 -ar 16000 audio/voice_{user_id}.wav")
@@ -82,6 +82,32 @@ async def process_voice_message(update: Update, context: CallbackContext):
     await update.message.reply_text(assistant_reply)
 
 
+async def process_text_message(update: Update, context: CallbackContext):
+    text = update.message.text
+    user_id = update.message.from_user.id
+    user_name = update.message.from_user.username or update.message.from_user.first_name
+
+    logging.info(f"User: {user_name} (ID: {user_id}) - Text message received:\n{text}")
+
+    # Send the text to ChatGPT
+    chatgpt_response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": text},
+            ],
+        max_tokens=1000,
+        n=1,
+        stop=None,
+        temperature=0.5,
+    )
+        
+    assistant_reply = chatgpt_response.choices[0].message["content"]
+    logging.info(f"User: {user_name} (ID: {user_id}) - ChatGPT response:\n{assistant_reply}")
+
+    await update.message.reply_text(assistant_reply)
+
+
 def main() -> None:
     # Create the Application and pass it your bot's token.
     application = (Application.builder()
@@ -91,12 +117,13 @@ def main() -> None:
                    .build()
     )
 
-    # on different commands - answer in Telegram
+    # On different commands - answer in Telegram
     application.add_handler(CommandHandler("start", start))
     # application.add_handler(CommandHandler("help", help_command))
 
-    # on non command i.e message - echo the message on Telegram
+    # On non command i.e message - echo the message on Telegram
     application.add_handler(MessageHandler(filters.VOICE & ~filters.COMMAND, process_voice_message))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, process_text_message))
 
     # Run the bot until the user presses Ctrl-C
     application.run_polling()
