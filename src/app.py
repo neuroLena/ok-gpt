@@ -19,6 +19,9 @@ OPENAI_API_KEY=os.environ["OPENAI_API_KEY"]
 file_handler = logging.FileHandler(filename="logs/bot.log", mode="a")
 stdout_handler = logging.StreamHandler(stream=sys.stdout)
 datadog_handler = DatadogHandler(Configuration())
+formatter = logging.Formatter('%(message)s')
+datadog_handler.setFormatter(formatter)
+
 handlers = [file_handler, stdout_handler, datadog_handler]
 logging.basicConfig(
     level=logging.INFO, 
