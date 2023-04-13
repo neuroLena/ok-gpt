@@ -36,7 +36,8 @@ openai.api_key = OPENAI_API_KEY
 async def start(update: Update, context: CallbackContext):
     start_text = """🤖 Hello\! Send me a *voice message*, and I'll transcribe it and send the result to *ChatGPT*\. Under the hood, I am using OpenAI's *[Whisper ASR](https://openai.com/research/whisper)* for Speech\-To\-Text and the famous *[GPT\-4](https://openai.com/product/gpt-4)*\.
 
-❗️ It may take up to a minute to get a response, because GPT itself is pretty slow\.
+❗️ I am only aware of the information up to year *2021*, so I may have difficulties answering questions about later times\.
+❗️ It may take up to a minute to get a response from me, because GPT itself is pretty slow\. Please be patient\.
 ❗️ So far, I do not maintain the context of the discussion, so every new message starts a new context for me\.
 👀 But you can gently ask @denisvolk, and maybe he soon implements memory for me\!
 
