@@ -3,7 +3,7 @@ import sys
 import openai
 import requests
 from telegram import Update, Voice, MessageEntity, ForceReply
-from telegram.ext import Application, ContextTypes, CallbackContext, CommandHandler, MessageHandler, filters
+from telegram.ext import Application, ContextTypes, CallbackContext, CommandHandler, MessageHandler, filters, Defaults
 import dotenv
 import json
 import logging
@@ -48,6 +48,23 @@ async def start(update: Update, context: CallbackContext):
 🆕 UPD 2023\-04\-12: Now you can send me text messages, too\!"""
 
     await update.message.reply_text(start_text, parse_mode="MarkdownV2", disable_web_page_preview=True)
+
+
+async def start(update: Update, context: CallbackContext):
+    start_text = """🤖 Hello\! Send me a *voice message*, and I'll transcribe it and send the result to *ChatGPT*\. Under the hood, I am using OpenAI's *[Whisper ASR](https://openai.com/research/whisper)* for Speech\-To\-Text and the famous *[GPT\-4](https://openai.com/product/gpt-4)*\.
+
+❗️ I am only aware of the information up to year *2021*, so I may have difficulties answering questions about later times\.
+❗️ It may take up to a minute to get a response from me, because GPT itself is pretty slow\. Please be patient\.
+❗️ So far, I do not maintain the context of the discussion, so every new message starts a new context for me\.
+👀 But you can gently ask @denisvolk, and maybe he soon implements memory for me\!
+
+🆕 UPD 2023\-04\-12: Now you can send me text messages, too\!"""
+
+    await update.message.reply_text(start_text, parse_mode="MarkdownV2", disable_web_page_preview=True)
+
+
+async def not_implemented_command(update: Update, context: CallbackContext):
+    await update.message.reply_text("This command is not implemented yet. Stay tuned for updates!")
 
 
 async def process_voice_message(update: Update, context: CallbackContext):
@@ -127,12 +144,15 @@ def main() -> None:
                    .token(TELEGRAM_API_TOKEN)
                    .read_timeout(300)
                    .write_timeout(300)
+                   # .defaults(Defaults())
                    .build()
     )
 
     # On different commands - answer in Telegram
     application.add_handler(CommandHandler("start", start))
-    # application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("help", not_implemented_command))
+    application.add_handler(CommandHandler("examples", not_implemented_command))
+    application.add_handler(CommandHandler("options", not_implemented_command))
 
     # On non command i.e message - echo the message on Telegram
     application.add_handler(MessageHandler(filters.VOICE & ~filters.COMMAND, process_voice_message))
