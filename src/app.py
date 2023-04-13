@@ -18,11 +18,15 @@ OPENAI_API_KEY=os.environ["OPENAI_API_KEY"]
 # Set up logging
 file_handler = logging.FileHandler(filename="logs/bot.log", mode="a")
 stdout_handler = logging.StreamHandler(stream=sys.stdout)
-datadog_handler = DatadogHandler(Configuration())
-formatter = logging.Formatter('%(message)s')
-datadog_handler.setFormatter(formatter)
+handlers = [file_handler, stdout_handler]
 
-handlers = [file_handler, stdout_handler, datadog_handler]
+# Add Datadog handler if DD_API_KEY and DD_SITE are provided
+if os.environ.get("DD_API_KEY") and os.environ.get("DD_SITE"):
+    datadog_handler = DatadogHandler(Configuration())
+    formatter = logging.Formatter('%(message)s')
+    datadog_handler.setFormatter(formatter)
+    handlers.append(datadog_handler)
+
 logging.basicConfig(
     level=logging.INFO, 
     format="[%(asctime)s] %(message)s",
@@ -69,22 +73,26 @@ async def process_voice_message(update: Update, context: CallbackContext):
     logging.info(f"User: {user_name} (ID: {user_id}) - Transcribed text:\n{transcribed_text}")
 
     # Send the transcribed text to ChatGPT
-    chatgpt_response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": transcribed_text},
-            ],
-        max_tokens=1000,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
-        
-    assistant_reply = chatgpt_response.choices[0].message["content"]
-    logging.info(f"User: {user_name} (ID: {user_id}) - ChatGPT response:\n{assistant_reply}")
+    try:
+        chatgpt_response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": transcribed_text},
+                ],
+            max_tokens=1000,
+            n=1,
+            stop=None,
+            temperature=0.5,
+        )
+            
+        assistant_reply = chatgpt_response.choices[0].message["content"]
+        logging.info(f"User: {user_name} (ID: {user_id}) - ChatGPT response:\n{assistant_reply}")
+        await update.message.reply_text(assistant_reply)
 
-    await update.message.reply_text(assistant_reply)
+    except openai.error.APIError as e:
+        logging.error(f"User: {user_name} (ID: {user_id}) - OpenAI API error:\n{e}")
+        await update.message.reply_text("Sorry, OpenAI servers are irresponsive at the moment. Please try again in a few minutes (you can just forward me the same message).")
 
 
 async def process_text_message(update: Update, context: CallbackContext):
